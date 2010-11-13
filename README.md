@@ -1,6 +1,6 @@
 # Twerk
 
-_twerk_ is a node.js module that makes sending and receiving messages on a stream a breeze.
+_twerk_ is a node.js module that makes sending and receiving messages on a stream a piece of cake.
 
 ## Installation
 
