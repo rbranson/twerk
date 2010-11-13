@@ -63,7 +63,7 @@ var _extend = function(obj) {
 };
 
 var twerk = module.exports = function(stream, options) {
-    return new twerk.Twerker(stream, options).modified();
+    return new twerk.Twerker(stream, options).lookalike();
 };
 
 // indicates a heartbeat message -- compared by identity (===)
@@ -85,6 +85,8 @@ twerk.Twerker = function(stream, options) {
     var self = this;
     
     process.EventEmitter.call(this);
+    
+    stream.setEncoding("utf8");
     
     this._stream    = stream;
     this._options   = _extend({}, OPTION_DEFAULTS, options || {});

@@ -8,7 +8,7 @@ _twerk_ turns an I/O stream into a set of individual messages using a simple fra
 
 ## Usage
 
-_twerk_ dices a stream into the pieces you actually sent them in on the other end. It works as an adapter, and the API works as a drop-in "replacement" for net.Stream:
+_twerk_ dices a stream into the pieces you actually intended to send them in. It works as an adapter, and the API works as a drop-in "replacement" for net.Stream:
 
     var socket = twerk(stream);
 
@@ -45,3 +45,8 @@ As stated previous, _twerk_ is just an adapter. It exposes itself as a function,
      });
 
 That's it.
+
+## Notes
+
+* Twerk only supports UTF-8 message encoding right now.
+* This is pretty new code, and while the test coverage is decent, it hasn't been put through enough rigor to be considered "production ready."

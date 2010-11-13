@@ -352,7 +352,7 @@ StreamMock.prototype.end        = function() { this._ended++; };
     twerker.destroy();
 })();
 
-// end & destroy hit the stream
+// end & destroy hit the stream through the lookalike
 (function() {
     var mock        = new StreamMock(),
         twerker     = new twerk.Twerker(mock, {}),
