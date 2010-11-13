@@ -243,9 +243,10 @@ var StreamMock = function() {
 
 util.inherits(StreamMock, process.EventEmitter);
 
-StreamMock.prototype.write      = function(data) { this._written.push(data); };
-StreamMock.prototype.destroy    = function() { this._destroyed++; };
-StreamMock.prototype.end        = function() { this._ended++; };
+StreamMock.prototype.write          = function(data) { this._written.push(data); };
+StreamMock.prototype.destroy        = function() { this._destroyed++; };
+StreamMock.prototype.end            = function() { this._ended++; };
+StreamMock.prototype.setEncoding    = function(s) { this._encoding = s; };
 
 // emit packet gets decoded and passed to the "data" event, destroy works and passes destroy
 (function() {
@@ -366,6 +367,17 @@ StreamMock.prototype.end        = function() { this._ended++; };
     
     twerker.destroy();
 })();
+
+// twerker sets encoding to utf-8
+(function() {
+    var mock        = new StreamMock(),
+        twerker     = new twerk.Twerker(mock, {});
+        
+    assert.equal("utf8", mock._encoding);
+    twerker.destroy();
+})();
+
+
 
 // -----------------------------------
 // twerk.nazi

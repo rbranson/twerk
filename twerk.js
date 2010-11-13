@@ -131,7 +131,7 @@ twerk.Twerker = function(stream, options) {
     });
     
     // send all the data we get to the decoder
-    stream.on("data", function(data) { decoder(data); });
+    stream.on("data", decoder);
 
     // make sure to stop our heartbeating on a close/end
     stream.on("close",  function() { self._onDisconnect(); self.emit("close"); });
