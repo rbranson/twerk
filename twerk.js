@@ -13,9 +13,7 @@ var NAZI_CHECK_INTERVAL = 100;
 var STREAM_EVENTS_FORWARDED = [
     "timeout",
     "drain",
-    "error",
-    "end",
-    "close"
+    "error"
 ];
 
 // the representation of 1GB should be the longest length we should transmit. this value 
@@ -114,6 +112,12 @@ twerk.Twerker = function(stream, options) {
     
     var decoder = twerk.decoder(function(message) {
         if (message === HEARTBEAT) {
+            if (!self._beater) {
+                self._beater = setInterval(function() {
+                    self.write(HEARTBEAT);
+                }, self._options.heartbeatInterval);
+            }
+            
             nazi();
         }
         else if (message === CORRUPT) {
@@ -126,6 +130,10 @@ twerk.Twerker = function(stream, options) {
     
     // send all the data we get to the decoder
     stream.on("data", function(data) { decoder(data); });
+
+    // make sure to stop our heartbeating on a close/end
+    stream.on("close",  function() { self._onDisconnect(); self.emit("close"); });
+    stream.on("end",    function() { self._onDisconnect(); self.emit("end"); });
 };
 
 util.inherits(twerk.Twerker, process.EventEmitter);
@@ -140,19 +148,23 @@ twerk.Twerker.prototype.lookalike = function() {
     });
 };
 
-// Writes a message to the stream
 twerk.Twerker.prototype.write = function(message) {
     this._stream.write(twerk.stringify(message));
 };
 
 twerk.Twerker.prototype.destroy = function() {
-    this._nazi(true);
+    this._onDisconnect();
     this._stream.destroy();
 };
 
 twerk.Twerker.prototype.end = function() {
-    this._nazi(true);
+    this._onDisconnect();
     this._stream.end.apply(this._stream, arguments);
+};
+
+twerk.Twerker.prototype._onDisconnect = function() {
+    clearInterval(this._beater);
+    this._nazi(true);    
 };
 
 // Converts a string-compatible object into a twerk frame
@@ -184,7 +196,6 @@ twerk.nazi = function(gap, callback) {
     // Do an initial beat to setup our "last" variable
     beat();
     
-    // Call check() every so often
     interval = setInterval(check, NAZI_CHECK_INTERVAL);
     
     // Pass back the beat function
@@ -294,4 +305,3 @@ twerk.decoder = function(callback) {
         }
     };
 };
-

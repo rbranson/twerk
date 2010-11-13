@@ -244,18 +244,125 @@ var StreamMock = function() {
 util.inherits(StreamMock, process.EventEmitter);
 
 StreamMock.prototype.write      = function(data) { this._written.push(data); };
-StreamMock.prototype.destroy    = function() { this._dc++; };
-StreamMock.prototype.end        = function() { this._ec++; };
+StreamMock.prototype.destroy    = function() { this._destroyed++; };
+StreamMock.prototype.end        = function() { this._ended++; };
 
+// emit packet gets decoded and passed to the "data" event, destroy works and passes destroy
 (function() {
     var mock    = new StreamMock(),
         twerker = new twerk.Twerker(mock, {});
-    
+        
     twerker.on("data", function(message) {
         assert.equal("abcd", message);
     });
     
+    mock.emit("data", "0,");
     mock.emit("data", "4,abcd4,abcd");
+    
+    twerker.destroy();
+    assert.equal(1, mock._destroyed);
+})();
+
+// end & close events causes are handled properly
+(function() {
+    var mock        = new StreamMock(),
+        twerker     = new twerk.Twerker(mock, {}),
+        ended       = false,
+        destroyed   = false;
+    
+    twerker.on("end", function() { ended = true; });    
+    mock.emit("end");
+    assert.ok(ended);
+
+    twerker.on("close", function() { closed = true; });    
+    mock.emit("close");
+    assert.ok(ended);
+
+    twerker.destroy();
+})();
+
+// corrupt event is triggered by corrupt data
+(function() {
+    var mock    = new StreamMock(),
+        twerker = new twerk.Twerker(mock, {}),
+        flagged = false;
+    
+    twerker.on("corrupt", function() {
+        flagged = true;
+    });
+    
+    mock.emit("data", "11111111111111111111111111111111111111111111111111111111111111");
+    assert.ok(flagged);
+    
+    twerker.destroy();
+})();
+
+// heartbeat timeout passes in and triggers the destroy
+(function() {
+    var mock    = new StreamMock(),
+        twerker = new twerk.Twerker(mock, { heartbeatTimeout: 250 });
+    
+    setTimeout(function() {
+        assert.equal(1, mock._destroyed);
+        twerker.destroy();
+    }, 500);
+})();
+
+// heartbeat timeout does NOT pass
+(function() {
+    var mock    = new StreamMock(),
+        twerker = new twerk.Twerker(mock, { heartbeatTimeout: 250 });
+    
+    var beater = setInterval(function() {
+        mock.emit("data", "0,");
+    }, 100);
+    
+    setTimeout(function() {
+        assert.equal(0, mock._destroyed);
+        twerker.destroy();
+        clearInterval(beater);
+    }, 500);
+})();
+
+// The basic decode/data pump works through the lookalike
+(function() {
+    var mock        = new StreamMock(),
+        twerker     = new twerk.Twerker(mock, {}),
+        lookalike   = twerker.lookalike();
+    
+    var gotData;
+    lookalike.on("data", function(msg) {
+        gotData = msg;
+    });
+    mock.emit("data", "4,abcd");
+    assert.equal("abcd", gotData);
+    
+    twerker.destroy();
+})();
+
+// Writing to the lookalike does an encode/write to the stream
+(function() {
+    var mock        = new StreamMock(),
+        twerker     = new twerk.Twerker(mock, {}),
+        lookalike   = twerker.lookalike();
+    
+    lookalike.write("abcd");
+    assert.equal("4,abcd", mock._written[0]);
+    
+    twerker.destroy();
+})();
+
+// end & destroy hit the stream
+(function() {
+    var mock        = new StreamMock(),
+        twerker     = new twerk.Twerker(mock, {}),
+        lookalike   = twerker.lookalike();
+        
+    lookalike.end();
+    lookalike.destroy();
+    
+    assert.equal(1, mock._ended);
+    assert.equal(1, mock._destroyed);    
     
     twerker.destroy();
 })();
@@ -303,4 +410,6 @@ StreamMock.prototype.end        = function() { this._ec++; };
 
 /////////////////////////////////////////
 
-util.log("All tests passed!");
+setTimeout(function() {
+    util.log("All tests passed!");
+}, 2000);
