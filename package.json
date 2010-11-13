@@ -1,6 +1,6 @@
 {
     "name":         "twerk",
-    "version":      "0.1.0",
+    "version":      "0.1.1",
     "author":       "Rick Branson",
     "description":  "A message framing module that makes sending and receiving messages on a stream a piece of cake.",
     "homepage":     "http://github.com/rbranson/twerk",
