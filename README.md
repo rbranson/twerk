@@ -1,6 +1,6 @@
 # Twerk
 
-_twerk_ turns an I/O stream into a set of individual messages using a simple framing protocol.
+_twerk_ is a node.js module that makes sending and receiving messages on a stream a breeze.
 
 ## Installation
 
@@ -8,7 +8,7 @@ _twerk_ turns an I/O stream into a set of individual messages using a simple fra
 
 ## Usage
 
-_twerk_ dices a stream into the pieces you actually intended to send them in. It works as an adapter, and the API works as a drop-in "replacement" for net.Stream:
+_twerk_ turns an I/O stream into a set of individual messages using a simple framing protocol. It dices a stream into the pieces you actually intended to send them in. It works as an adapter, and the API works as a drop-in "replacement" for net.Stream:
 
     var socket = twerk(stream);
 

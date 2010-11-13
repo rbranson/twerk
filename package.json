@@ -1,0 +1,20 @@
+{
+    "name":         "twerk",
+    "version":      "0.1.0",
+    "author":       "Rick Branson",
+    "description":  "A message framing module that makes sending and receiving messages on a stream a piece of cake.",
+    "homepage":     "http://github.com/rbranson/twerk",
+    "engines":      { "node": ">=0.2.0" },
+    "main":         "twerk.js",
+    "scripts": {
+        "test":         "node test.js"
+    },
+    "repository": {
+        "type":         "git",
+        "url":          "http://github.com/rbranson/twerk.git"
+    },
+    "bugs": {
+        "mail":         "",
+        "web":          "http://github.com/rbranson/twerk/issues"
+    }
+}
