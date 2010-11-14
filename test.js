@@ -13,13 +13,22 @@ function measure(what, f) {
     util.log("Executed " + what + " in " + duration + "ms");
 }
 
-function measureIterations(what, iterations, f) {
-    var duration = durationOf(function() {
-        for (var i = 0; i < iterations; i++) {
+function measureIterationsOverTime(what, duration, f, granularity) {
+    granularity = granularity || 1000;
+    
+    var iterations  = 0,
+        start       = Date.now();
+
+    while (Date.now() < (start + duration)) {
+        for (var i = 0; i < granularity; i++) {
             f();
         }
-    });
-    var persec = (iterations / duration) * 1000;
+        iterations += granularity;
+    };
+    
+    var duration    = Date.now() - start,
+        persec      = (iterations / (Date.now() - start)) * 1000;
+        
     util.log("Executed " + what + " " + iterations + " times in " + duration + "ms " + "(" + persec + "/sec)");
 }
 
@@ -164,21 +173,23 @@ assertTwerkDecoder(["abcd"], ["4,ab", "", "cd"]);
 
 if (process.argv[2] == "--perf") {
     // performance test
+    util.log("Hold tight... these performance tests are around 10 seconds each.");
+    
     (function() {
         var perfdec = twerk.decoder(function(msg) { }),
             byte100 = "100," + repeat("X", 100),
             onek = "1024," + repeat("X", 1024),
             tenk = (10 * 1024) + "," + repeat("X", 10 * 1024);
 
-        measureIterations("100 byte message decode", 30000000, function() {
+        measureIterationsOverTime("100 byte message decode", 10000, function() {
             perfdec(byte100);
         });
 
-        measureIterations("1kb message decode", 10000000, function() {
+        measureIterationsOverTime("1kb message decode", 10000, function() {
             perfdec(onek);
         });
     
-        measureIterations("10kb message decode", 2000000, function() {
+        measureIterationsOverTime("10kb message decode", 10000, function() {
             perfdec(tenk);
         });
     
@@ -190,7 +201,7 @@ if (process.argv[2] == "--perf") {
             stresstenkc = tenk.slice(5000, 7499),
             stresstenkd = tenk.slice(7500);
     
-        measureIterations("corrupt four-part 10kb message decode", 750000, function() {
+        measureIterationsOverTime("corrupt four-part 10kb message decode", 10000, function() {
             perfdec(stresstenka);
             perfdec(stresstenkb);
             perfdec(stresstenkc);
@@ -204,7 +215,7 @@ if (process.argv[2] == "--perf") {
     
         assert.equal(10240 + "10240,".length, (stresstenka + stresstenkb + stresstenkc + stresstenkd).length);
     
-        measureIterations("correct four-part 10kb message decode", 1000000, function() {
+        measureIterationsOverTime("correct four-part 10kb message decode", 10000, function() {
             perfdec(stresstenka);
             perfdec(stresstenkb);
             perfdec(stresstenkc);
